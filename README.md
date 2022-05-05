@@ -2,7 +2,11 @@
 
 **RW-Builder v1.1.0**
 
-리얼월드2022 에 사용되는 LUA 번들러입니다.
+- 홈페이지: https://www.realw.kr<br>
+- 디스코드: https://discord.gg/realw<br>
+- 유튜브채널: https://www.youtube.com/realw<br>
+
+리얼월드2022 에 사용되는 FiveM LUA 번들러입니다.
 ```cs
 [ 무엇 ]
 fxmanifest.lua의
