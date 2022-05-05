@@ -3,6 +3,8 @@
 ----------------- https://discord.gg/realw
 
 Config = {}
+Config.insertFileHeader = true
+Config.removeComments = true
 Config.basePath = "E:/RWF/"
 Config.baseResPath = "resources/[RWF_DEV]/"
 Config.srcResPath = "[src]/"

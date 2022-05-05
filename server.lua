@@ -118,38 +118,47 @@ end
 
 function getContent(resName, key, basePath)
   local content = ""
+  local count = 0
   local entryList = getContentEntryList(resName, key, basePath)
   for _, v in ipairs(entryList) do
     local c = LoadResourceFile(resName, v)
     if c then
-      content = content .. "\n\n---------- " .. v .. " ----------\n\n"
+      if Config.insertFileHeader then
+        content = content .. "---------- " .. v .. " ----------\n\n"
+      end
+      if Config.removeComments then
+        c = c:gsub("%-%-%[%[.-%]%]", "")
+        c = c:gsub("%-%-.-\n", "\n")
+      end
       content = content .. c .. "\n"
+      count = count + 1
       print("^2Include: " .. v .. "^0")
     else
       print("^1Error: " .. v .. "^0")
     end
   end
-  return content
+  return content .. "\n\n", count
 end
 
-function saveStaticFiles(srcResName, distResName)
+function copyStaticFiles(srcResName, distResName)
+  local count = 0
   local resSrcFullPath = getResSrcFullPath(srcResName)
   local resDistDirFullPath = getResDistFullPath(distResName)
-
   local entryList = getContentEntryList(srcResName, "file", resSrcFullPath)
   for _, v in ipairs(entryList) do
     local fileContent = LoadResourceFile(srcResName, v)
     if fileContent then
       os.execute("mkdir " .. getPath(resDistDirFullPath .. v):gsub("/", "\\"))
       SaveResourceFile(distResName, v, fileContent, -1)
+      count = count + 1
       print("^2Copy: " .. v .. "^0")
     end
   end
-  return #entryList > 0
+  return #entryList > 0, count
 end
 
 function build(resName, arrReplaceRefValue)
-  print(string.format("-- Build Start [%s] ---\n", resName))
+  print(string.format("----- Build Start [%s] -----\n", resName))
 
   local srcResName = string.format("%s.src", resName)
   local distResName = string.format("%s.dist", resName)
@@ -159,25 +168,34 @@ function build(resName, arrReplaceRefValue)
   os.execute('rd /s/q "' .. (resDistDirFullPath):gsub("/", "\\") .. '"')
   os.execute("mkdir " .. (resDistDirFullPath .. Config.resDistDirPath):gsub("/", "\\"))
 
-  local sharedContent = getContent(srcResName, "shared_script", resSrcFullPath)
-  SaveResourceFile(distResName, Config.resDistDirPath .. "shared.lua", sharedContent, -1)
-  print(string.format("^3> Generated Script: %s\n^0", Config.resDistDirPath .. "shared.lua"))
+  local content = ""
+  local contentFileCount = 0
 
-  local serverContent = getContent(srcResName, "server_script", resSrcFullPath)
-  SaveResourceFile(distResName, Config.resDistDirPath .. "server.lua", serverContent, -1)
-  print(string.format("^3> Generated Script: %s\n^0", Config.resDistDirPath .. "server.lua"))
+  content,
+    contentFileCount = getContent(srcResName, "shared_script", resSrcFullPath)
+  SaveResourceFile(distResName, Config.resDistDirPath .. "shared.lua", content, -1)
+  print(string.format("^3> Generated Script: %s (%d files)\n^0", Config.resDistDirPath .. "shared.lua", contentFileCount))
 
-  local clientContent = getContent(srcResName, "client_script", resSrcFullPath)
-  SaveResourceFile(distResName, Config.resDistDirPath .. "client.lua", clientContent, -1)
-  print(string.format("^3> Generated Script: %s\n^0", Config.resDistDirPath .. "client.lua"))
+  content,
+    contentFileCount = getContent(srcResName, "server_script", resSrcFullPath)
+  SaveResourceFile(distResName, Config.resDistDirPath .. "server.lua", content, -1)
+  print(string.format("^3> Generated Script: %s (%d files)\n^0", Config.resDistDirPath .. "server.lua", contentFileCount))
 
-  if saveStaticFiles(srcResName, distResName) then
-    print(string.format("^3> Copied static files\n^0"))
+  content,
+    contentFileCount = getContent(srcResName, "client_script", resSrcFullPath)
+  SaveResourceFile(distResName, Config.resDistDirPath .. "client.lua", content, -1)
+  print(string.format("^3> Generated Script: %s (%d files)\n^0", Config.resDistDirPath .. "client.lua", contentFileCount))
+
+  local result,
+    resultCount = copyStaticFiles(srcResName, distResName)
+
+  if result then
+    print(string.format("^3> Copied static files (%d files)\n^0", resultCount))
   end
 
   generateManifest(resName, arrReplaceRefValue)
 
-  print(string.format("-- Build Done [%s] ---\n", resName))
+  print(string.format("----- Build Done [%s] -----\n", resName))
 end
 
 function generateManifest(resName, arrReplaceRefValue)
