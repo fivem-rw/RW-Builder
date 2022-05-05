@@ -156,7 +156,7 @@ function build(resName, arrReplaceRefValue)
   local resSrcFullPath = getResSrcFullPath(srcResName)
   local resDistDirFullPath = getResDistFullPath(distResName)
 
-  os.execute('rd /s/q "' .. (resDistDirFullPath .. Config.resDistDirPath):gsub("/", "\\") .. '"')
+  os.execute('rd /s/q "' .. (resDistDirFullPath):gsub("/", "\\") .. '"')
   os.execute("mkdir " .. (resDistDirFullPath .. Config.resDistDirPath):gsub("/", "\\"))
 
   local sharedContent = getContent(srcResName, "shared_script", resSrcFullPath)
