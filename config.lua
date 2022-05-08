@@ -10,7 +10,7 @@ Config.baseResPath = "resources/[RWF_DEV]/"
 Config.srcResPath = "[src]/"
 Config.distResPath = "[dist]/"
 Config.resDistDirPath = "dist/"
-Config.baseManifestMatadataEntries = {
+Config.manifestMatadataEntries = {
   "fx_version",
   "game",
   "author",
